@@ -1769,10 +1769,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     saveData();
 
-                    // Обновляем UI
+                    // Обновляем UI (ошибка статистики не должна ломать загрузку workers)
                     renderObjects();
-                    renderWorkerStats();
                     populateWorkers();
+                    try {
+                        renderWorkerStats();
+                    } catch (statsErr) {
+                        console.error('Ошибка renderWorkerStats (пропущено):', statsErr);
+                    }
                     populateServiceSelect(prices, selectDisplay, selectedValue, optionsList);
                     populateManualServiceSelect(prices, manualSelectDisplay, manualSelectedValue, manualOptionsList, manualPriceLabel);
                     populateCustomServiceSelect(customServices);

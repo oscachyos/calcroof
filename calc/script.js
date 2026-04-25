@@ -1428,17 +1428,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
             async function loadAllData() {
                 try {
-                    const [objectsData, workersData, pricesData, customServicesData, expenseTypesData] = await Promise.all([
-                        fetchWithRetry('/calc/json/save.json'),
+                    const [encryptedObjectsData, fallbackObjectsData, workersData, pricesData, customServicesData, expenseTypesData] = await Promise.all([
+                        fetchWithRetry('/upload/save.enc.json'),
+                        fetchWithRetry('/upload/save.json'),
                         fetchWithRetry('/calc/json/workers.json'),
                         fetchWithRetry('/calc/json/prices.json'),
                         fetchWithRetry('/calc/json/custom-services.json'),
                         fetchWithRetry('/calc/json/expense-types.json')
                     ]);
 
+                    let objectsData = null;
+                    const encryptedSource = (encryptedObjectsData && encryptedObjectsData.__encryptedBackup)
+                        ? encryptedObjectsData
+                        : ((fallbackObjectsData && fallbackObjectsData.__encryptedBackup) ? fallbackObjectsData : null);
+                    if (encryptedSource) {
+                        const password = prompt('Найден зашифрованный /upload/save.enc.json. Введите пароль для загрузки данных:');
+                        if (password) {
+                            try {
+                                objectsData = await decryptBackupData(encryptedSource, password);
+                            } catch (decryptError) {
+                                if (decryptError && decryptError.message === 'WEB_CRYPTO_UNAVAILABLE') {
+                                    alert(
+                                        'Шифрованный /upload/save.enc.json найден, но шифрование недоступно в текущем окружении.\n' +
+                                        'Откройте сайт через https или localhost/127.0.0.1.'
+                                    );
+                                } else {
+                                    alert('Не удалось расшифровать /upload/save.enc.json. Проверьте пароль.');
+                                }
+                            }
+                        } else {
+                            alert('Пароль не введен. Будет использован обычный save.json (если он есть).');
+                        }
+                    }
+
+                    if (!objectsData) {
+                        objectsData = fallbackObjectsData;
+                    }
+
                     // Проверяем успешность загрузки каждого файла
                     if (!objectsData) {
-                        console.error('Не удалось загрузить save.json');
+                        console.error('Не удалось загрузить /upload/save.enc.json или /upload/save.json');
                         window.objects = [];
                     } else {
                         window.objects = objectsData;

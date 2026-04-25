@@ -1,0 +1,18 @@
+[
+    {"name": "Монтаж наплавляемой кровли в 1 слой", "unit": "кв.м.", "cost": 100, "image": "/calc/img/gorelka.png"},
+    {"name": "Монтаж пароизоляции в 1 слой", "unit": "кв.м.", "cost": 60, "image": "/calc/img/gorelka.png"},
+    {"name": "Монтаж аэраторов", "unit": "шт.", "cost": 500, "image": "/calc/img/aerator.png"},
+    {"name": "Демонтаж полный «кровельного пирога»", "unit": "кв.м.", "cost": 700, "image": "/calc/img/rezchik.png"},
+    {"name": "Грунтовка битумным праймером", "unit": "кв.м.", "cost": 90, "image": "/calc/img/praymer.png"},
+    {"name": "Монтаж утеплителя каменная вата в 1 слой", "unit": "кв.м.", "cost": 80, "image": "/calc/img/minvata.png"},
+    {"name": "Монтаж утеплителя пенопласт в 1 слой", "unit": "кв.м.", "cost": 60, "image": "/calc/img/penoplast.png"},
+    {"name": "Монтаж утеплителя PIR в 1 слой", "unit": "кв.м.", "cost": 280, "image": "/calc/img/pir.png"},
+    {"name": "Монтаж из OSB листов в 1 слой", "unit": "кв.м.", "cost": 220, "image": "/calc/img/osb.png"},
+    {"name": "Монтаж из шифера в 1 слой", "unit": "кв.м.", "cost": 220, "image": "/calc/img/shifer.png"},
+    {"name": "Монтаж пароизоляции", "unit": "кв.м.", "cost": 60, "image": "/calc/img/gorelka.png"},
+    {"name": "Парапетные крышки без костылей", "unit": "м.п.", "cost": 350, "image": null},
+    {"name": "Монтаж водоприемной воронки", "unit": "шт.", "cost": 2500, "image": "/calc/img/voronka.png"},
+    {"name": "Монтаж отливов из оцинкованной стали", "unit": "м.п.", "cost": 250, "image": "/calc/img/ocinkovka.png"},
+    {"name": "Монтаж прижимной планки с герметиком", "unit": "м.п.", "cost": 220, "image": "/calc/img/reyka.png"},
+    {"name": "Устранение разрушений кровельного ковра", "unit": "кв.м.", "cost": 200, "image": "/calc/img/gorelka.png"}
+]

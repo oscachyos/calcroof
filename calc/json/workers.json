@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Артём",
+    "role": "foreman",
+    "percentage": 5,
+    "paysForemanPercent": false,
+    "foremanPercent": 0
+  },
+  {
+    "name": "Коля",
+    "role": "foreman",
+    "percentage": 5,
+    "paysForemanPercent": false,
+    "foremanPercent": 0
+  },
+  {
+    "name": "Слава",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "Жека",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "Илья",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "Ростик",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "СлаваКаменский",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "Андрюха",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "Саша",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  },
+  {
+    "name": "Денис",
+    "role": "worker",
+    "percentage": 0,
+    "paysForemanPercent": true,
+    "foremanPercent": 15
+  }
+]

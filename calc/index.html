@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькуляторы для мягкой наплавляемой кровли - TechnoNICOL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <link rel="stylesheet" href="/calc/styles.css">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/calc/json/manifest.json">
+    <meta name="theme-color" content="#0f1419">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Калькуляторы">
+    <link rel="apple-touch-icon" href="/calc/logo.png">
+</head>
+<body>
+    <header>
+        <img src="logo.png" height="152px" width="152px">
+    </header>
+
+    <div class="tabs">
+        <ul class="tab-links">
+            <li><a href="#calc2" class="active">Расход крепежа</a></li>
+            <li><a href="#calc4">Уклон кровли</a></li>
+            <li><a href="#calc7">Расчет времени работ</a></li>
+            <li><a href="#calc8">Расчет логистики</a></li>
+            <li><a href="#calc11">Расход праймера</a></li>
+            <li><a href="#calc12">Расход газовых баллонов</a></li>
+            <li><a href="#calc13">Расход мастики</a></li>
+            <li><a href="#calc15">Аэраторы</a></li>
+            <li><a href="#calc16">Минвата</a></li>
+            <li><a href="#calc17">PIR-плиты</a></li>
+            <li><a href="#calc18">Расчеты кол-ва рулонов</a></li>
+            <li><a href="#calc19">Расчеты работ</a></li>
+            <li><a href="#calc-analysis">Анализ работы</a></li>
+        </ul>
+
+        <div id="calc2" class="tab-content active">
+            <h2>Калькулятор расхода крепежа</h2>
+            <form id="form2">
+                <label>Площадь кровли (м²): <input type="text" inputmode="decimal" id="area2" placeholder="Введите площадь"></label>
+                <button class="ekbroof" type="button" onclick="calculate2()">Рассчитать</button>
+            </form>
+            <div class="result" id="result2"></div>
+        </div>
+
+        <div id="calc4" class="tab-content">
+            <h2>Калькулятор уклона кровли</h2>
+            <form id="form4">
+                <label>Длина ската (м): <input type="text" inputmode="decimal" id="length4" placeholder="Введите длину"></label>
+                <label>Высота подъема (м): <input type="text" inputmode="decimal" id="height4" placeholder="Введите высоту"></label>
+                <button class="ekbroof" type="button" onclick="calculate4()">Рассчитать</button>
+            </form>
+            <div class="result" id="result4"></div>
+        </div>
+
+        <div id="calc7" class="tab-content">
+            <h2>Калькулятор времени выполнения работ</h2>
+            <form id="form7">
+                <label>Площадь кровли (м²): <input type="text" inputmode="decimal" id="area7" placeholder="Введите площадь"></label>
+                <label>Численность бригады: <input type="number" id="team7" placeholder="Введите количество" min="1"></label>
+                <button class="ekbroof" type="button" onclick="calculate7()">Рассчитать</button>
+            </form>
+            <div class="result" id="result7"></div>
+        </div>
+
+        <div id="calc8" class="tab-content">
+            <h2>Калькулятор логистики материалов</h2>
+            <form id="form8">
+                <label>Расстояние (км): <input type="text" inputmode="decimal" id="distance8" placeholder="Введите расстояние"></label>
+                <label>Объем материалов (м³): <input type="text" inputmode="decimal" id="volume8" placeholder="Введите объем"></label>
+                <button class="ekbroof" type="button" onclick="calculate8()">Рассчитать</button>
+            </form>
+            <div class="result" id="result8"></div>
+        </div>
+
+        <div id="calc11" class="tab-content">
+            <h2>Калькулятор расхода праймера</h2>
+            <form id="form11">
+                <label>Тип праймера:
+                    <select id="primerType11">
+                        <option value="primer01">Праймер битумный №01</option>
+                        <option value="primer03">Праймер водоэмульсионный №03</option>
+                        <option value="primer04">Праймер быстросохнущий №04</option>
+                        <option value="primer08">Праймер-концентрат №08</option>
+                    </select>
+                </label>
+                <label>Тип основания:
+                    <select id="baseType11">
+                        <option value="concrete">Бетон</option>
+                        <option value="metal">Металл</option>
+                    </select>
+                </label>
+                <label>Введите площадь (м²) или количество (кг):
+                    <input type="text" inputmode="decimal" id="area11" placeholder="Введите значение">
+                </label>
+                <label>Тип расчета:
+                    <select id="calcType11">
+                        <option value="areaToMaterial">Площадь → Материал</option>
+                        <option value="materialToArea">Материал → Площадь</option>
+                    </select>
+                </label>
+                <button class="ekbroof" type="button" onclick="calculate11()">Рассчитать</button>
+            </form>
+            <div class="result" id="result11"></div>
+        </div>
+
+        <div id="calc12" class="tab-content">
+            <h2>Калькулятор расхода газовых баллонов</h2>
+            <form id="form12">
+                <label>Площадь кровли (м²): <input type="text" inputmode="decimal" id="area12" placeholder="Введите площадь"></label>
+                <label>Количество слоев: <input type="number" id="layers12" min="1" placeholder="1-2"></label>
+                <button class="ekbroof" type="button" onclick="calculate12()">Рассчитать</button>
+            </form>
+            <div class="result" id="result12"></div>
+        </div>
+
+        <div id="calc13" class="tab-content">
+            <h2>Калькулятор расхода мастики</h2>
+            <form id="form13">
+                <label>Тип мастики:
+                    <select id="masticType13">
+                        <option value="bitum">Битумная (ведро 20 кг)</option>
+                        <option value="polymer">Полимерная (ведро 18 кг)</option>
+                    </select>
+                </label>
+                <label>Введите площадь (м²) или количество (кг):
+                    <input type="text" inputmode="decimal" id="area13" placeholder="Введите значение">
+                </label>
+                <label>Тип расчета:
+                    <select id="calcType13">
+                        <option value="areaToMaterial">Площадь → Материал</option>
+                        <option value="materialToArea">Материал → Площадь</option>
+                    </select>
+                </label>
+                <button class="ekbroof" type="button" onclick="calculate13()">Рассчитать</button>
+            </form>
+            <div class="result" id="result13"></div>
+        </div>
+
+        <div id="calc15" class="tab-content">
+            <h2>Калькулятор аэраторов</h2>
+            <form id="form15">
+                <label>Введите площадь (м²) или количество (шт):
+                    <input type="text" inputmode="decimal" id="inputValue15" placeholder="Введите значение">
+                </label>
+                <label>Тип расчета:
+                    <select id="calcType15">
+                        <option value="areaToMaterial">Площадь → Аэраторы</option>
+                        <option value="materialToArea">Аэраторы → Площадь</option>
+                    </select>
+                </label>
+                <button class="ekbroof" type="button" onclick="calculate15()">Рассчитать</button>
+            </form>
+            <div class="result" id="result15"></div>
+        </div>
+
+        <div id="calc16" class="tab-content">
+            <h2>Калькулятор минваты</h2>
+            <form id="form16">
+                <label>Тип минваты:
+                    <select id="material16">
+                        <option value="minwool_technoacoustic">Минвата Техноакустик, 50 мм (упаковки)</option>
+                        <option value="minwool_technoroof">Минвата Техноруф В60, 50 мм (упаковки)</option>
+                        <option value="minwool_ozm">Минвата Техно ОЗМ, 30 мм (упаковки)</option>
+                    </select>
+                </label>
+                <label>Введите площадь (м²) или количество (упаковки):
+                    <input type="text" inputmode="decimal" id="inputValue16" placeholder="Введите значение">
+                </label>
+                <label>Тип расчета:
+                    <select id="calcType16">
+                        <option value="areaToMaterial">Площадь → Минвата</option>
+                        <option value="materialToArea">Минвата → Площадь</option>
+                    </select>
+                </label>
+                <button class="ekbroof" type="button" onclick="calculate16()">Рассчитать</button>
+            </form>
+            <div class="result" id="result16"></div>
+        </div>
+
+        <div id="calc19" class="tab-content">
+            <h2>Расчеты работников</h2>
+
+        <form id="custom-service-form" class="calc-form custom-service-form" style="display: none;">
+            <div class="form-group">
+                <label>Название услуги:</label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" name="serviceName" placeholder="Например, Электросварка перил" autocomplete="off">
+                    <ul id="service-name-suggestions" class="suggestions-list"></ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Выбрать готовую услугу:</label>
+                <div class="custom-select">
+                    <div id="service-select-custom" class="select-display">Выберите услугу <span class="dropdown-icon">▾</span></div>
+                    <input type="hidden" id="selected-value-custom" name="service">
+                    <ul id="service-options-custom" class="options-list"></ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Цена (₽):</label>
+                <input type="text" inputmode="decimal" name="servicePrice" placeholder="5000" required>
+            </div>
+            <div class="form-group">
+                <label>Участники и КТУ:</label>
+                <div id="service-workers-checkbox-group" class="checkbox-group"></div>
+            </div>
+            <div class="form-group issued-money-group">
+                <label>Выданные деньги:</label>
+                <div class="checkbox-group"></div>
+            </div>
+            <div class="form-group">
+                <label>Настройки:</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="isPaid" id="service-is-paid">
+                        Выплачено
+                    </label>
+                    <label>
+                        <input type="checkbox" name="useRostikMethod">
+                        Рассчитать по Ростиковской методике
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn">Добавить услугу</button>
+            <button type="button" class="btn cancel-btn">Отменить</button>
+        </form>
+
+        <form id="object-form" class="calc-form object-form" style="display: none;">
+            <div class="form-group">
+                <label>Название объекта:</label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" name="objectName" placeholder="Например, Кровля здания 1" autocomplete="off">
+                    <ul id="object-name-suggestions" class="suggestions-list"></ul>
+                </div>
+            </div>
+            <div class="calc-inputs">
+                <div class="form-group">
+                    <label>Длина (м):</label>
+                    <input type="text" inputmode="decimal" id="object-length" name="length" placeholder="10">
+                </div>
+                <div class="form-group">
+                    <label>Ширина (м):</label>
+                    <input type="text" inputmode="decimal" id="object-width" name="width" placeholder="5">
+                </div>
+                <div class="form-group">
+                    <label>Площадь (м²):</label>
+                    <input type="text" inputmode="decimal" id="object-area" name="area" placeholder="50">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Услуга:</label>
+                <div class="custom-select">
+                    <div id="service-select" class="select-display">Выберите услугу <span class="dropdown-icon">▾</span></div>
+                    <input type="hidden" id="selected-value" name="service">
+                    <ul id="service-options" class="options-list"></ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Участники и КТУ:</label>
+                <div id="workers-checkbox-group" class="checkbox-group"></div>
+            </div>
+            <div class="form-group area-distribution-group">
+                <label>Распределение площади:</label>
+                <div class="area-distribution-controls">
+                    <input type="text" inputmode="decimal" id="distribute-area-amount" placeholder="Площадь для распределения (м²)">
+                    <button type="button" class="btn distribute-area-btn" onclick="distributeAreaEqually('')">Распределить поровну</button>
+                </div>
+                <div id="area-warning" class="area-warning" style="display: none;"></div>
+            </div>
+            <div class="form-group issued-money-group">
+                <label>Выданные деньги:</label>
+                <div class="checkbox-group"></div>
+            </div>
+            <div class="form-group">
+                <label>Настройки:</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="isPaid" id="object-is-paid">
+                        Выплачено
+                    </label>
+                    <label>
+                        <input type="checkbox" name="useRostikMethod">
+                        Рассчитать по Ростиковской методике
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn">Добавить объект</button>
+            <button type="button" class="btn cancel-btn">Отменить</button>
+        </form>
+
+        <form id="expense-form" class="calc-form expense-form" style="display: none;">
+            <div class="form-group">
+                <label>Название расхода:</label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" name="expenseName" placeholder="Например, Бензин" autocomplete="off">
+                    <ul id="expense-name-suggestions" class="suggestions-list"></ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Выбрать тип расхода:</label>
+                <div class="custom-select">
+                    <div id="expense-type-select" class="select-display">Выберите тип расхода <span class="dropdown-icon">▾</span></div>
+                    <input type="hidden" id="expense-type-value" name="expenseType">
+                    <ul id="expense-type-options" class="options-list"></ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Сумма (₽):</label>
+                <input type="text" inputmode="decimal" name="expenseAmount" placeholder="-500">
+            </div>
+            <div class="form-group fuel-calc-mode" style="display: none;">
+                    <label>Режим расчета бензина:</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="fuelMode" value="amount" checked> Сумма</label>
+                        <label><input type="radio" name="fuelMode" value="distance"> Расстояние</label>
+                        <label><input type="radio" name="fuelMode" value="mileage"> Километраж</label>
+                    </div>
+                    <div class="distance-input" style="display: none;">
+                        <label>Расстояние (км):</label>
+                        <input type="text" inputmode="decimal" name="distance" placeholder="212">
+                    </div>
+                    <div class="mileage-input" style="display: none;">
+                        <label>Начальный километраж (км):</label>
+                        <input type="text" inputmode="decimal" name="startMileage" placeholder="1000">
+                        <label>Конечный километраж (км):</label>
+                        <input type="text" inputmode="decimal" name="endMileage" placeholder="1212">
+                    </div>
+            </div>
+            <div class="form-group">
+                <label>Участники (списание):</label>
+                <div id="expense-workers-checkbox-group" class="checkbox-group"></div>
+            </div>
+            <div class="form-group">
+                <label>Участники (начисление):</label>
+                <div id="expense-receivers-checkbox-group" class="checkbox-group"></div>
+            </div>
+            <div class="form-group">
+                <label>Настройки:</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="isPaid" id="expense-is-paid">
+                        Выплачено
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn">Добавить расход</button>
+            <button type="button" class="btn cancel-btn">Отменить</button>
+        </form>
+
+        <form id="manual-price-form" class="calc-form manual-price-form" style="display: none;">
+            <div class="form-group">
+                <label>Название объекта:</label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" name="objectName" placeholder="Например, Галерея УЗТМ" required autocomplete="off">
+                    <ul id="manual-object-name-suggestions" class="suggestions-list"></ul>
+                </div>
+            </div>
+            <div class="calc-inputs">
+                <div class="form-group">
+                    <label>Длина (м):</label>
+                    <input type="text" inputmode="decimal" id="manual-length" name="length" placeholder="10">
+                </div>
+                <div class="form-group">
+                    <label>Ширина (м):</label>
+                    <input type="text" inputmode="decimal" id="manual-width" name="width" placeholder="5">
+                </div>
+                <div class="form-group">
+                    <label>Площадь (м²):</label>
+                    <input type="text" inputmode="decimal" id="manual-area" name="area" placeholder="50">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Услуга (выберите название):</label>
+                <div class="custom-select">
+                    <div id="manual-service-select" class="select-display">Выберите услугу <span class="dropdown-icon">▾</span></div>
+                    <input type="hidden" id="manual-selected-value" name="service">
+                    <ul id="manual-service-options" class="options-list"></ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="manual-price-label" data-unit="м²">Цена за м² (₽):</label>
+                <input type="text" inputmode="decimal" name="pricePerSquare" placeholder="10" required>
+            </div>
+            <div class="form-group">
+                <label>Участники и КТУ:</label>
+                <div id="manual-workers-checkbox-group" class="checkbox-group"></div>
+            </div>
+            <div class="form-group area-distribution-group">
+                <label>Распределение площади:</label>
+                <div class="area-distribution-controls">
+                    <input type="text" inputmode="decimal" id="manual-distribute-area-amount" placeholder="Площадь для распределения (м²)">
+                    <button type="button" class="btn distribute-area-btn" onclick="distributeAreaEqually('manual')">Распределить поровну</button>
+                </div>
+                <div id="manual-area-warning" class="area-warning" style="display: none;"></div>
+            </div>
+            <div class="form-group issued-money-group">
+                <label>Выданные деньги:</label>
+                <div class="checkbox-group"></div>
+            </div>
+            <div class="form-group">
+                <label>Настройки:</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="isPaid" id="manual-is-paid">
+                        Выплачено
+                    </label>
+                    <label>
+                        <input type="checkbox" name="useRostikMethod">
+                        Рассчитать по Ростиковской методике
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn">Добавить объект</button>
+            <button type="button" class="btn cancel-btn">Отменить</button>
+        </form>
+
+        <div id="worker-results">
+            
+            <!-- Уведомления и алерты -->
+            <div id="alerts-container" class="alerts-container"></div>
+            
+            <!-- Быстрый поиск -->
+            <div class="filter-group">
+                <input type="text" id="object-filter" placeholder="Быстрый поиск объектов...">
+            </div>
+            
+            <!-- Расширенные фильтры -->
+            <div class="advanced-filters">
+                    <div class="filters-header">
+                        <h3>🔍 Фильтры и поиск</h3>
+                        <button type="button" id="toggle-filters" class="toggle-filters-btn">Развернуть ▼</button>
+                    </div>
+                    
+                    <div class="filters-content" style="display: none;">
+                        <div class="filters-grid">
+                            <!-- Поиск -->
+                            <div class="filter-item">
+                                <label>Поиск по названию/услуге</label>
+                                <input type="text" id="search-name" placeholder="Введите название или услугу...">
+                            </div>
+                            
+                            <!-- Фильтр по датам -->
+                            <div class="filter-item">
+                                <label>Период</label>
+                                <select id="filter-period">
+                                    <option value="all">Все время</option>
+                                    <option value="today">Сегодня</option>
+                                    <option value="week">Последняя неделя</option>
+                                    <option value="month">Последний месяц</option>
+                                    <option value="quarter">Последний квартал</option>
+                                    <option value="year">Последний год</option>
+                                    <option value="custom">Свой период</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Кастомные даты -->
+                            <div class="filter-item custom-dates" style="display: none;">
+                                <label>От даты</label>
+                                <input type="date" id="date-from">
+                            </div>
+                            
+                            <div class="filter-item custom-dates" style="display: none;">
+                                <label>До даты</label>
+                                <input type="date" id="date-to">
+                            </div>
+                            
+                            <!-- Статус -->
+                            <div class="filter-item">
+                                <label>Статус</label>
+                                <select id="filter-status">
+                                    <option value="all">Все</option>
+                                    <option value="paid">Оплачено</option>
+                                    <option value="unpaid">Не оплачено</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Тип объекта -->
+                            <div class="filter-item">
+                                <label>Тип</label>
+                                <select id="filter-type">
+                                    <option value="all">Все типы</option>
+                                    <option value="regular">Обычные</option>
+                                    <option value="manual">Ручная цена</option>
+                                    <option value="service">Услуги</option>
+                                    <option value="expense">Расходы</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Работник -->
+                            <div class="filter-item">
+                                <label>Работник</label>
+                                <select id="filter-worker">
+                                    <option value="all">Все работники</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Сумма от -->
+                            <div class="filter-item">
+                                <label>Сумма от (₽)</label>
+                                <input type="number" id="filter-sum-from" placeholder="0">
+                            </div>
+                            
+                            <!-- Сумма до -->
+                            <div class="filter-item">
+                                <label>Сумма до (₽)</label>
+                                <input type="number" id="filter-sum-to" placeholder="999999">
+                            </div>
+                        </div>
+                        
+                        <div class="filters-actions">
+                            <button type="button" id="apply-filters" class="btn-apply-filters">Применить фильтры</button>
+                            <button type="button" id="reset-filters" class="btn-reset-filters">Сбросить</button>
+                        </div>
+                    </div>
+                </div>
+            
+            <div class="results-layout">
+                <div id="results" class="results"></div>
+                    <h2>Участие работников</h3>
+                    <div id="worker-stats" class="worker-stats-grid"></div>
+            </div>
+            <!-- Модальное окно для комментариев -->
+            <div id="comments-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="close-comments" class="close">×</span>
+                    <h2>Комментарии к объекту</h2>
+                    <div id="comments-list" class="comments-list"></div>
+                    <div class="add-comment-form">
+                        <textarea id="new-comment-text" placeholder="Добавить комментарий..." rows="3"></textarea>
+                        <button id="add-comment-btn" class="btn-add-comment">Добавить</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="history-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="close-history" class="close">×</span>
+                    <h2>История изменений</h2>
+                    <div id="history-list"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Новая вкладка Анализ работы -->
+        <div id="calc-analysis" class="tab-content">
+            <h2>Анализ работы</h2>
+            
+            <!-- Топ-статистика -->
+            <div id="top-stats" class="top-stats-panel">
+                <div class="section-header">
+                    <h3>📊 Статистика</h3>
+                    <button type="button" class="toggle-section-btn" data-target="top-stats-grid"><span class="text">Свернуть </span>▲</button>
+                </div>
+                <div id="top-stats-grid" class="top-stats-grid">
+                    <div class="stat-card stat-card-blue">
+                        <div class="stat-icon">👷</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Топ работник</div>
+                            <div class="stat-value" id="top-worker">—</div>
+                            <div class="stat-detail" id="top-worker-detail">—</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-card-green">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Самый прибыльный</div>
+                            <div class="stat-value" id="top-object">—</div>
+                            <div class="stat-detail" id="top-object-detail">—</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-card-purple">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Средний заработок</div>
+                            <div class="stat-value" id="avg-earnings">—</div>
+                            <div class="stat-detail" id="avg-earnings-detail">—</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-card-orange">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Всего объектов</div>
+                            <div class="stat-value" id="total-objects">—</div>
+                            <div class="stat-detail" id="total-objects-detail">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Общая статистика по заработкам -->
+            <div id="earnings-charts" class="earnings-charts-section">
+                <div class="section-header">
+                    <h3>📊 Динамика заработков</h3>
+                    <button type="button" class="toggle-section-btn" data-target="earnings-charts-container"><span class="text">Свернуть </span>▲</button>
+                </div>
+                <div id="earnings-charts-container" class="charts-container">
+                    <div class="chart-box">
+                        <h4>График по дням</h4>
+                        <canvas id="earnings-timeline-chart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>Распределение заработков</h4>
+                        <canvas id="earnings-pie-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Прогнозирование дохода -->
+            <div class="forecast-panel">
+                <div class="section-header">
+                    <h3 style="margin: 0; color: var(--text-primary);">📈 Прогноз на следующий месяц</h3>
+                    <button type="button" class="toggle-section-btn" data-target="forecast-grid"><span class="text">Свернуть </span>▲</button>
+                </div>
+                <div id="forecast-grid" class="forecast-grid">
+                    <div class="forecast-card">
+                        <div class="forecast-label">Ожидаемый доход</div>
+                        <div class="forecast-value" id="forecast-income">-</div>
+                        <div class="forecast-info" id="forecast-income-info">На основе среднего дохода</div>
+                    </div>
+                    <div class="forecast-card">
+                        <div class="forecast-label">Потенциальных объектов</div>
+                        <div class="forecast-value" id="forecast-objects">-</div>
+                        <div class="forecast-info" id="forecast-objects-info">В среднем за месяц</div>
+                    </div>
+                    <div class="forecast-card">
+                        <div class="forecast-label">Тренд</div>
+                        <div class="forecast-value" id="forecast-trend">-</div>
+                        <div class="forecast-info" id="forecast-trend-info">Сравнение с прошлым месяцем</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="calc17" class="tab-content">
+            <h2>Калькулятор PIR-плит</h2>
+            <form id="form17">
+                <label>Тип PIR-плит:
+                    <select id="material17">
+                        <option value="pir_logicpir">PIR-плиты LOGICPIR, 50 мм (плиты)</option>
+                        <option value="pir_logicpir_prof">PIR-плиты LOGICPIR PROF, 90 мм (плиты)</option>
+                    </select>
+                </label>
+                <label>Введите площадь (м²) или количество (плиты):
+                    <input type="text" inputmode="decimal" id="inputValue17" placeholder="Введите значение">
+                </label>
+                <label>Тип расчета:
+                    <select id="calcType17">
+                        <option value="areaToMaterial">Площадь → Плиты</option>
+                        <option value="materialToArea">Плиты → Площадь</option>
+                    </select>
+                </label>
+                <button class="ekbroof" type="button" onclick="calculate17()">Рассчитать</button>
+            </form>
+            <div class="result" id="result17"></div>
+        </div>
+
+        <div id="calc18" class="tab-content">
+            <h2>Калькулятор кровельных рулонов</h2>
+            <form id="form18">
+                <label>Площадь кровли (м²):
+                    <input type="text" inputmode="decimal" id="area18" placeholder="Введите площадь">
+                </label>
+                <label>Тип материала:
+                    <select id="material18">
+                        <option value="technoelast-k-tkp.pdf">Техноэласт К ТКП, 10x1 м</option>
+                        <option value="technoelast-p-tpp.pdf">Техноэласт П ТПП, 10x1 м</option>
+                        <option value="technoelast-p-epp.pdf">Техноэласт П ЭПП, 10x1 м</option>
+                        <option value="technoelast-k-ekp.pdf">Техноэласт К ЭКП, 10x1 м</option>
+                        <option value="technoelast-p-hpp.pdf">Техноэласт П ХПП, 10x1 м</option>
+                        <option value="technoelast-termo-p-epp.pdf">Техноэласт ТЕРМО П ЭПП, 10x1 м</option>
+                        <option value="technoelast-termo-k-ekp.pdf">Техноэласт ТЕРМО К ЭКП, 10x1 м</option>
+                        <option value="technoelast-green-p-epp.pdf">Техноэласт ГРИН П ЭПП, 10x1 м</option>
+                        <option value="technoelast-green-k-ekp.pdf">Техноэласт ГРИН К ЭКП, 10x1 м</option>
+                        <option value="technoelast-barer-lite.pdf">Техноэласт БАРЬЕР ЛАЙТ, 20x1 м</option>
+                        <option value="technoelast-dekor-ekp.pdf">Техноэласт Декор К ЭКП, 10x1 м</option>
+                        <option value="technoelast-vent-k-ekv.pdf">Техноэласт ВЕНТ К ЭКВ, 8x1 м</option>
+                        <option value="technoelast-vent-p-epv.pdf">Техноэласт ВЕНТ П ЭПВ, 8x1 м</option>
+                        <option value="technoelast-solo-rp1-ekp.pdf">Техноэласт СОЛО РП1 ЭКП, 8x1 м</option>
+                        <option value="technoelast-plamya-stop-ekp.pdf">Техноэласт ПЛАМЯ СТОП ЭКП, 10x1 м</option>
+                        <option value="technoelast-emp.pdf">Техноэласт ЭМП, 10x1 м</option>
+                        <option value="uniflex-k-ekp.pdf">Унифлекс К ЭКП, 10x1 м</option>
+                        <option value="uniflex-p-epp.pdf">Унифлекс П ЭПП, 10x1 м</option>
+                        <option value="uniflex-k-tkp.pdf">Унифлекс К ТКП, 10x1 м</option>
+                        <option value="uniflex-express-emp.pdf">Унифлекс ЭКСПРЕСС ЭМП, 10x1 м</option>
+                        <option value="uniflex-k-hkp.pdf">Унифлекс К ХКП, 10x1 м</option>
+                        <option value="uniflex-p-hpp.pdf">Унифлекс П ХПП, 10x1 м</option>
+                        <option value="stekloizon-k-tkp.pdf">Стеклоизол К ТКП, 10x1 м</option>
+                        <option value="stekloizon-r-tkp.pdf">Стеклоизол Р ТПП/ХПП/ХМП/ТКП/ХКП, 9x1 м</option>
+                        <option value="bikrost-k-hkp.pdf">Бикрост К ХКП, 10x1 м</option>
+                        <option value="bikrost-k-tkp.pdf">Бикрост К ТКП, 10x1 м</option>
+                        <option value="bikrost-p-epp.pdf">Бикрост П ЭПП, 15x1 м</option>
+                        <option value="linkrom-rem-tkp.pdf">Линокром РЕМ ТКП, 8x1 м</option>
+                        <option value="linkrom-p-epp.pdf">Линокром П ЭПП, 15x1 м</option>
+                        <option value="linkrom-p-tpp.pdf">Линокром П ТПП, 15x1 м</option>
+                        <option value="linkrom-k-hkp.pdf">Линокром К ХКП, 10x1 м</option>
+                        <option value="bikroelast-k-ekp.pdf">Бикроэласт К ЭКП, 10x1 м</option>
+                        <option value="bikroelast-p-epp.pdf">Бикроэласт П ЭПП, 15x1 м</option>
+                        <option value="bikroelast-k-tkp.pdf">Бикроэласт К ТКП, 10x1 м</option>
+                        <option value="bikroelast-p-tpp.pdf">Бикроэласт П ТПП, 15x1 м</option>
+                        <option value="bikroelast-k-hkp.pdf">Бикроэласт К ХКП, 10x1 м</option>
+                        <option value="bikroelast-p-hpp.pdf">Бикроэласт П ХПП, 15x1 м</option>
+                        <option value="ekoflex-ekp.pdf">Экофлекс ЭПП/ЭКП/ХКП, 10x1 м</option>
+                        <option value="bipol-ekp.pdf">Биполь К ЭКП, 10x1 м</option>
+                        <option value="bipol-epp.pdf">Биполь П ЭПП, 15x1 м</option>
+                        <option value="bipol-tkp.pdf">Биполь К ТКП, 10x1 м</option>
+                        <option value="bipol-tpp.pdf">Биполь П ТПП, 15x1 м</option>
+                        <option value="bipol-hpp.pdf">Биполь П ХПП, 15x1 м</option>
+                        <option value="technobarer.pdf">ТЕХНОБАРЬЕР, 10x1 м</option>
+                        <option value="uniflex-s-sms.pdf">Унифлекс С ЭМС, 15x1 м</option>
+                        <option value="parob-sa500.pdf">Паробарьер СА 500, 50x1.08 м</option>
+                        <option value="parob-sf1000.pdf">Паробарьер СФ 1000, 30x1.08 м</option>
+                    </select>
+                </label>
+                <div class="button-group" style="display: flex; gap: 1rem;">
+                    <button class="ekbroof" type="button" onclick="calculate18()">Рассчитать</button>
+                    <button class="ekbroof" type="button" onclick="renderPDF18()">Показать PDF</button>
+                </div>
+            </form>
+            <div class="result" id="result18"></div>
+            <canvas id="pdf-canvas18"></canvas>
+            <div id="pdf-controls18" class="pdf-controls">
+                <button type="button" onclick="prevPage18()">Назад</button>
+                <span>Страница <span id="page-num18">1</span> из <span id="page-count18">1</span></span>
+                <button type="button" onclick="nextPage18()">Вперед</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/calc/settings.js"></script>
+    <script src="/calc/script.js"></script>
+</body>
+</html>

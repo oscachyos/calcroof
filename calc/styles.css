@@ -4610,6 +4610,63 @@ body select option {
 	cursor: pointer;
 	min-height: 2rem;
 }
+@media (max-width: 760px) {
+	.settings-toolbar .btn {
+		flex: 1 1 100%;
+	}
+	.workers-settings-table-wrap {
+		border: none;
+		background: transparent;
+		overflow: visible;
+	}
+	.workers-settings-table {
+		display: block;
+	}
+	.workers-settings-table thead {
+		display: none;
+	}
+	.workers-settings-table tbody {
+		display: block;
+	}
+	.workers-settings-table tbody tr {
+		display: block;
+		margin-bottom: 12px;
+		border: 1px solid var(--border-color);
+		border-radius: 10px;
+		background: var(--bg-card);
+		padding: 8px;
+	}
+	.workers-settings-table tbody td {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		border-bottom: 1px dashed var(--border-color);
+		padding: 10px 8px;
+	}
+	.workers-settings-table tbody td:last-child {
+		border-bottom: none;
+	}
+	.workers-settings-table tbody td::before {
+		content: attr(data-label);
+		flex: 0 0 45%;
+		color: var(--text-secondary);
+		font-size: 0.85rem;
+	}
+	.workers-settings-table input[type="text"],
+	.workers-settings-table input[type="number"],
+	.workers-settings-table select {
+		max-width: none;
+		flex: 1 1 auto;
+	}
+	.workers-settings-table .ws-pays-label {
+		justify-content: flex-end;
+		width: 100%;
+	}
+	.workers-settings-table .ws-del {
+		width: 100%;
+	}
+}
 
 /* Prevent white background in PWA/APK */
 @media (display-mode: standalone) {

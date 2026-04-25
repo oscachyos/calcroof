@@ -1096,6 +1096,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.dataset.index = String(idx);
 
             const tdName = document.createElement('td');
+            tdName.dataset.label = 'Имя';
             const inpName = document.createElement('input');
             inpName.type = 'text';
             inpName.className = 'ws-name';
@@ -1103,6 +1104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tdName.appendChild(inpName);
 
             const tdRole = document.createElement('td');
+            tdRole.dataset.label = 'Роль';
             const selRole = document.createElement('select');
             selRole.className = 'ws-role';
             [['worker', 'Рабочий'], ['foreman', 'Бригадир']].forEach(([val, label]) => {
@@ -1115,6 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tdRole.appendChild(selRole);
 
             const tdPays = document.createElement('td');
+            tdPays.dataset.label = 'Платит % мастеру';
             tdPays.className = 'ws-pays-cell';
             const lab = document.createElement('label');
             lab.className = 'ws-pays-label';
@@ -1127,6 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tdPays.appendChild(lab);
 
             const tdFpct = document.createElement('td');
+            tdFpct.dataset.label = '% с работника';
             const inpFpct = document.createElement('input');
             inpFpct.type = 'number';
             inpFpct.className = 'ws-fpct';
@@ -1141,6 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tdFpct.appendChild(inpFpct);
 
             const tdDel = document.createElement('td');
+            tdDel.dataset.label = 'Действие';
             const btnDel = document.createElement('button');
             btnDel.type = 'button';
             btnDel.className = 'btn secondary ws-del';

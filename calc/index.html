@@ -36,6 +36,7 @@
             <li><a href="#calc17">PIR-плиты</a></li>
             <li><a href="#calc18">Расчеты кол-ва рулонов</a></li>
             <li><a href="#calc19">Расчеты работ</a></li>
+            <li><a href="#calc-settings">Настройки</a></li>
             <li><a href="#calc-analysis">Анализ работы</a></li>
         </ul>
 
@@ -522,8 +523,8 @@
             
             <div class="results-layout">
                 <div id="results" class="results"></div>
-                    <h2>Участие работников</h3>
-                    <div id="worker-stats" class="worker-stats-grid"></div>
+                <h2 class="worker-stats-section-title">Участие работников</h2>
+                <div id="worker-stats" class="worker-stats-grid"></div>
             </div>
             <!-- Модальное окно для комментариев -->
             <div id="comments-modal" class="modal" style="display: none;">
@@ -546,6 +547,17 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        <div id="calc-settings" class="tab-content">
+            <h2>Настройки работников</h2>
+            <p class="settings-hint">После «Применить» нужно сохранить расчёты работ.</p>
+            <div class="settings-toolbar">
+                <button type="button" id="btn-workers-add" class="btn ekbroof">Добавить работника</button>
+                <button type="button" id="btn-workers-apply" class="btn ekbroof">Применить</button>
+                <button type="button" id="btn-workers-reload" class="btn secondary">Перезагрузить страницу</button>
+            </div>
+            <div id="workers-settings-table-wrap" class="workers-settings-table-wrap"></div>
         </div>
 
         <!-- Новая вкладка Анализ работы -->
@@ -738,6 +750,6 @@
     </div>
 
     <script src="settings.js"></script>
-    <script src="script.js"></script>
+    <script id="calc-script" src="script.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 // calc/script.js
 document.addEventListener('DOMContentLoaded', () => {
-    // База приложения: папка, где лежит script.js (работает и на GitHub Pages в подпапке, и локально)
-    const scriptEl = document.querySelector('script[src*="script.js"]');
+    // База приложения: папка calc/ (script с id надёжен при любых CDN со «script» в пути)
+    const scriptEl = document.getElementById('calc-script')
+        || document.querySelector('script[src$="script.js"], script[src*="script.js"]');
     const calcBaseUrl = (scriptEl && scriptEl.src)
         ? new URL('./', scriptEl.src)
         : new URL('./', window.location.href);
@@ -214,6 +215,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('- Высота вкладки:', analysisTab.offsetHeight);
                 }, 200);
             }, 100);
+        }
+
+        if (targetId === 'calc-settings') {
+            renderWorkersSettingsTab();
         }
     }
 
@@ -856,7 +861,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (confirm('Восстановить данные из резервной копии? Текущие данные будут перезаписаны.')) {
                         window.objects = Array.isArray(restoredObjects) ? restoredObjects : [];
-                        workers = Array.isArray(restoredWorkers) ? restoredWorkers : (workers || []);
+                        workers = (Array.isArray(restoredWorkers) ? restoredWorkers : (workers || []))
+                            .map((w) => normalizeWorkerRecord(typeof w === 'object' ? w : { name: w, role: 'worker' }));
                         
                         saveData();
                         populateWorkers();
@@ -932,7 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!normalized.objects.length && Array.isArray(input.data)) {
                 normalized.objects = input.data;
             }
-            // Если нет workers в backup, оставляем текущий список
+            // Если в файле нет работников — не подменяем (для восстановления: оставить текущий список в приложении)
             if (!normalized.workers.length) {
                 normalized.workers = workers || [];
             }
@@ -1045,6 +1051,185 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof worker.paysForemanPercent === 'boolean') return worker.paysForemanPercent;
         return !isForeman(workerName);
     }
+
+    function normalizeWorkerRecord(w) {
+        const base = (w && typeof w === 'object') ? { ...w } : { name: String(w || '').trim(), role: 'worker' };
+        delete base.group; /* устаревшее поле; роль только через role: worker | foreman */
+        base.name = (base.name || '').trim() || 'Без имени';
+        base.role = base.role === 'foreman' ? 'foreman' : 'worker';
+        let pct = Number(base.percentage);
+        if (!Number.isFinite(pct)) pct = 0;
+        base.percentage = pct;
+        const cfg = Number(window.CALC_SETTINGS?.foremanPercent);
+        const defPct = Number.isFinite(cfg) ? cfg : 15;
+        if (base.role === 'foreman') {
+            base.paysForemanPercent = false;
+            const fp = Number(base.foremanPercent);
+            base.foremanPercent = Number.isFinite(fp) ? fp : 0;
+        } else {
+            if (typeof base.paysForemanPercent !== 'boolean') base.paysForemanPercent = true;
+            const fp = Number(base.foremanPercent);
+            base.foremanPercent = Number.isFinite(fp) ? fp : defPct;
+        }
+        return base;
+    }
+
+    function renderWorkersSettingsTab() {
+        const wrap = document.getElementById('workers-settings-table-wrap');
+        if (!wrap) return;
+        wrap.textContent = '';
+        const table = document.createElement('table');
+        table.className = 'workers-settings-table';
+        const thead = document.createElement('thead');
+        const hr = document.createElement('tr');
+        ['Имя', 'Роль', 'Платит % мастеру', '% с работника', ''].forEach((label) => {
+            const th = document.createElement('th');
+            th.textContent = label;
+            hr.appendChild(th);
+        });
+        thead.appendChild(hr);
+        table.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        workers.forEach((w, idx) => {
+            const nw = normalizeWorkerRecord(typeof w === 'object' ? w : { name: w, role: 'worker' });
+            const row = document.createElement('tr');
+            row.dataset.index = String(idx);
+
+            const tdName = document.createElement('td');
+            const inpName = document.createElement('input');
+            inpName.type = 'text';
+            inpName.className = 'ws-name';
+            inpName.value = nw.name;
+            tdName.appendChild(inpName);
+
+            const tdRole = document.createElement('td');
+            const selRole = document.createElement('select');
+            selRole.className = 'ws-role';
+            [['worker', 'Рабочий'], ['foreman', 'Бригадир']].forEach(([val, label]) => {
+                const op = document.createElement('option');
+                op.value = val;
+                op.textContent = label;
+                if (nw.role === val) op.selected = true;
+                selRole.appendChild(op);
+            });
+            tdRole.appendChild(selRole);
+
+            const tdPays = document.createElement('td');
+            tdPays.className = 'ws-pays-cell';
+            const lab = document.createElement('label');
+            lab.className = 'ws-pays-label';
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.className = 'ws-pays';
+            chk.checked = nw.paysForemanPercent;
+            if (nw.role === 'foreman') chk.disabled = true;
+            lab.appendChild(chk);
+            tdPays.appendChild(lab);
+
+            const tdFpct = document.createElement('td');
+            const inpFpct = document.createElement('input');
+            inpFpct.type = 'number';
+            inpFpct.className = 'ws-fpct';
+            inpFpct.min = '0';
+            inpFpct.max = '100';
+            inpFpct.step = '1';
+            inpFpct.value = String(nw.foremanPercent);
+            if (nw.role === 'foreman') {
+                inpFpct.disabled = true;
+                inpFpct.title = 'У бригадира не удерживается';
+            }
+            tdFpct.appendChild(inpFpct);
+
+            const tdDel = document.createElement('td');
+            const btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'btn secondary ws-del';
+            btnDel.textContent = 'Удалить';
+            tdDel.appendChild(btnDel);
+
+            row.appendChild(tdName);
+            row.appendChild(tdRole);
+            row.appendChild(tdPays);
+            row.appendChild(tdFpct);
+            row.appendChild(tdDel);
+
+            selRole.addEventListener('change', () => {
+                const isF = selRole.value === 'foreman';
+                chk.disabled = isF;
+                inpFpct.disabled = isF;
+                if (isF) {
+                    chk.checked = false;
+                    inpFpct.value = '0';
+                } else {
+                    chk.checked = true;
+                    const def = Number(window.CALC_SETTINGS?.foremanPercent);
+                    inpFpct.value = String(Number.isFinite(def) ? def : 15);
+                }
+            });
+            btnDel.addEventListener('click', () => {
+                const i = parseInt(row.dataset.index, 10);
+                if (!Number.isNaN(i)) workers.splice(i, 1);
+                renderWorkersSettingsTab();
+            });
+            tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+    }
+
+    function collectWorkersFromSettingsTable() {
+        const wrap = document.getElementById('workers-settings-table-wrap');
+        if (!wrap) return [];
+        const rows = wrap.querySelectorAll('tbody tr');
+        const list = [];
+        rows.forEach((row) => {
+            const name = row.querySelector('.ws-name')?.value?.trim() || '';
+            if (!name) return;
+            const role = row.querySelector('.ws-role')?.value === 'foreman' ? 'foreman' : 'worker';
+            const pays = row.querySelector('.ws-pays')?.checked;
+            const fpct = parseFloat(row.querySelector('.ws-fpct')?.value);
+            const prev = workers.find(w => getWorkerName(w) === name);
+            const percentage = prev && typeof prev === 'object' && typeof prev.percentage === 'number' && Number.isFinite(prev.percentage)
+                ? prev.percentage
+                : 0;
+            list.push(normalizeWorkerRecord({
+                name,
+                role,
+                paysForemanPercent: role === 'foreman' ? false : !!pays,
+                foremanPercent: role === 'foreman' ? 0 : (Number.isFinite(fpct) ? fpct : 15),
+                percentage
+            }));
+        });
+        const names = list.map(x => x.name);
+        const dup = names.find((n, i) => names.indexOf(n) !== i);
+        if (dup) {
+            alert('Имена работников не должны повторяться: ' + dup);
+            return null;
+        }
+        return list;
+    }
+
+    function initWorkersSettingsControls() {
+        const root = document.getElementById('calc-settings');
+        if (!root || root.dataset.workersSettingsInit === '1') return;
+        root.dataset.workersSettingsInit = '1';
+        document.getElementById('btn-workers-add')?.addEventListener('click', () => {
+            workers.push(normalizeWorkerRecord({ name: 'Новый', role: 'worker' }));
+            renderWorkersSettingsTab();
+        });
+        document.getElementById('btn-workers-apply')?.addEventListener('click', () => {
+            const next = collectWorkersFromSettingsTable();
+            if (!next) return;
+            workers = next;
+            saveData();
+            populateWorkers();
+            if (typeof window.renderWorkerStats === 'function') window.renderWorkerStats();
+        });
+        document.getElementById('btn-workers-reload')?.addEventListener('click', () => {
+            location.reload();
+        });
+    }
+
     let prices = [];
     let customServiceNames = [];
     let customServices = [];
@@ -1444,7 +1629,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             async function loadAllData() {
                 try {
-                    const [encryptedObjectsData, fallbackObjectsData, workersData, pricesData, customServicesData, expenseTypesData] = await Promise.all([
+                    const [encryptedObjectsData, fallbackObjectsData, templateWorkersJson, pricesData, customServicesData, expenseTypesData] = await Promise.all([
                         fetchWithRetry(calcUrl('../upload/save.enc.json')),
                         fetchWithRetry(calcUrl('../upload/save.json')),
                         fetchWithRetry(calcUrl('json/workers.json')),
@@ -1481,24 +1666,72 @@ document.addEventListener('DOMContentLoaded', () => {
                         objectsData = fallbackObjectsData;
                     }
 
-                    // Проверяем успешность загрузки каждого файла
+                    // Объекты из save: массив ИЛИ { objects, workers? }
                     if (!objectsData) {
                         console.error('Не удалось загрузить upload/save.enc.json или upload/save.json');
                         window.objects = [];
-                    } else {
+                    } else if (Array.isArray(objectsData)) {
                         window.objects = objectsData;
+                    } else if (objectsData && typeof objectsData === 'object') {
+                        let rawObjs = objectsData.objects;
+                        if (!Array.isArray(rawObjs) && Array.isArray(objectsData.data)) {
+                            rawObjs = objectsData.data;
+                        }
+                        window.objects = Array.isArray(rawObjs) ? rawObjs : [];
+                    } else {
+                        window.objects = [];
+                    }
+                    if (!Array.isArray(window.objects)) {
+                        console.warn('Поле objects в save не массив — используется пустой список');
+                        window.objects = [];
                     }
 
-                    if (!workersData) {
-                        console.error('Не удалось загрузить workers.json');
-                        workers = [
+                    let workersFromSave = null;
+                    if (objectsData && typeof objectsData === 'object' && !Array.isArray(objectsData)
+                        && Array.isArray(objectsData.workers) && objectsData.workers.length > 0) {
+                        workersFromSave = objectsData.workers;
+                    }
+
+                    let workersPayload = templateWorkersJson;
+                    if (workersPayload && typeof workersPayload === 'object' && !Array.isArray(workersPayload)
+                        && Array.isArray(workersPayload.workers)) {
+                        workersPayload = workersPayload.workers;
+                    }
+                    if (!workersPayload || !Array.isArray(workersPayload) || workersPayload.length === 0) {
+                        const altWorkersUrl = new URL('json/workers.json', window.location.href).href;
+                        if (altWorkersUrl !== calcUrl('json/workers.json')) {
+                            const retry = await fetchWithRetry(altWorkersUrl);
+                            let r = retry;
+                            if (r && typeof r === 'object' && !Array.isArray(r) && Array.isArray(r.workers)) {
+                                r = r.workers;
+                            }
+                            if (Array.isArray(r) && r.length) workersPayload = r;
+                        }
+                    }
+                    if (!workersPayload || !Array.isArray(workersPayload) || workersPayload.length === 0) {
+                        console.error('Не удалось загрузить workers.json или файл пуст — используется запасной список');
+                        workersPayload = [
                             { name: 'Артём', role: 'foreman' },
                             { name: 'Коля', role: 'foreman' },
                             { name: 'Слава', role: 'worker' },
                             { name: 'Женя', role: 'worker' }
                         ];
+                    }
+                    workersPayload = workersPayload.map(normalizeWorkerRecord);
+
+                    if (workersFromSave) {
+                        workers = workersFromSave.map(normalizeWorkerRecord);
                     } else {
-                        workers = workersData;
+                        workers = workersPayload;
+                    }
+                    if (!workers.length) {
+                        console.warn('Список работников пуст после загрузки — подставлен запасной список');
+                        workers = [
+                            { name: 'Артём', role: 'foreman' },
+                            { name: 'Коля', role: 'foreman' },
+                            { name: 'Слава', role: 'worker' },
+                            { name: 'Женя', role: 'worker' }
+                        ].map(normalizeWorkerRecord);
                     }
 
                     if (!pricesData) {
@@ -1529,6 +1762,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     customServiceNames = [...new Set(window.objects.filter(obj => obj.isCustomService).map(obj => obj.name))];
 
+                    saveData();
+
                     // Обновляем UI
                     renderObjects();
                     renderWorkerStats();
@@ -1552,6 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         loadData();
+        initWorkersSettingsControls();
 
         // Обработчик отправки формы кастомной услуги
         customServiceForm.addEventListener('submit', (e) => {
@@ -2361,11 +2597,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Функция применения расширенных фильтров
                     function applyAdvancedFilters(objects) {
+                        if (!Array.isArray(objects)) return [];
                         return objects.filter(obj => {
+                            if (!obj || typeof obj !== 'object') return false;
                             // Фильтр по поиску
                             if (advancedFilters.search) {
-                                const searchMatch = obj.name.toLowerCase().includes(advancedFilters.search) ||
-                                    obj.service.toLowerCase().includes(advancedFilters.search);
+                                const searchMatch = (obj.name || '').toLowerCase().includes(advancedFilters.search) ||
+                                    (obj.service || '').toLowerCase().includes(advancedFilters.search);
                                 if (!searchMatch) return false;
                             }
                             
@@ -2418,7 +2656,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             // Фильтр по работнику
                             if (advancedFilters.worker !== 'all') {
-                                const hasWorker = obj.workers.some(w => (typeof w === 'string' ? w : w.name) === advancedFilters.worker) ||
+                                const hasWorker = (obj.workers || []).some(w => (typeof w === 'string' ? w : w.name) === advancedFilters.worker) ||
                                     (obj.receivers && obj.receivers.includes(advancedFilters.worker));
                                 if (!hasWorker) return false;
                             }
@@ -2433,6 +2671,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     function renderObjects() {
+                        if (!Array.isArray(window.objects)) {
+                            console.warn('window.objects не массив — сброшено в []');
+                            window.objects = [];
+                        }
                         const filterText = filterInput.value.trim().toLowerCase();
                         resultsDiv.innerHTML = '';
                         
@@ -2441,9 +2683,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Затем применяем быстрый поиск, если есть
                         filteredObjects = !filterText ? filteredObjects : filteredObjects.filter(obj => {
+                            if (!obj || typeof obj !== 'object') return false;
                             const workerMatch = filterText.split(' ')[0];
                             const typeMatch = filterText.replace(workerMatch, '').trim();
-                            const hasWorker = obj.workers.some(w => (typeof w === 'string' ? w : w.name).toLowerCase() === workerMatch) ||
+                            const hasWorker = (obj.workers || []).some(w => (typeof w === 'string' ? w : w.name).toLowerCase() === workerMatch) ||
                             (obj.receivers && obj.receivers.some(r => r.toLowerCase() === workerMatch)) ||
                             (obj.issuedMoney && obj.issuedMoney.some(im => im.name.toLowerCase() === workerMatch));
 
@@ -2454,36 +2697,43 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (typeMatch.includes('объектов с ручной ценой')) return obj.manualPrice;
                             if (typeMatch.includes('услуги')) return obj.isCustomService;
                             if (typeMatch.includes('расходов')) return obj.isExpense;
-                            if (typeMatch.includes('кту ниже нормы')) return !obj.isExpense && obj.workers.some(w => w.name.toLowerCase() === workerMatch && w.ktu < 1);
+                            if (typeMatch.includes('кту ниже нормы')) return !obj.isExpense && (obj.workers || []).some(w => w.name.toLowerCase() === workerMatch && w.ktu < 1);
 
+                            const ts = obj.timestamp != null ? String(obj.timestamp) : '';
                             return (
-                                obj.name.toLowerCase().includes(filterText) ||
+                                (obj.name || '').toLowerCase().includes(filterText) ||
                                 (obj.area && obj.area.toLowerCase().includes(filterText)) ||
-                                obj.service.toLowerCase().includes(filterText) ||
-                                obj.cost.toLowerCase().includes(filterText) ||
-                                obj.workers.some(worker => (typeof worker === 'string' ? worker : worker.name).toLowerCase().includes(filterText)) ||
+                                (obj.service || '').toLowerCase().includes(filterText) ||
+                                String(obj.cost || '').toLowerCase().includes(filterText) ||
+                                (obj.workers || []).some(worker => (typeof worker === 'string' ? worker : worker.name).toLowerCase().includes(filterText)) ||
                                 (obj.receivers && obj.receivers.some(receiver => receiver.toLowerCase().includes(filterText))) ||
                                 (obj.issuedMoney && obj.issuedMoney.some(im => im.name.toLowerCase().includes(filterText))) ||
-                                obj.timestamp.toLowerCase().includes(filterText)
+                                ts.toLowerCase().includes(filterText)
                             );
                         });
 
-                        if (filteredObjects.length === 0) {
-                            resultsDiv.innerHTML = '<p>Объектов по этому фильтру не найдено.</p>';
+                        const renderableObjects = filteredObjects.filter(obj => obj && typeof obj === 'object'
+                            && Array.isArray(obj.workers) && obj.workers.length > 0);
+                        if (renderableObjects.length === 0) {
+                            resultsDiv.innerHTML = filteredObjects.length === 0
+                                ? '<p>Объектов по этому фильтру не найдено.</p>'
+                                : '<p>Записи есть, но у них нет списка участников (workers) — проверьте <code>upload/save.json</code> или восстановите из резервной копии.</p>';
                         } else {
-                            filteredObjects.forEach((obj, index) => {
+                            renderableObjects.forEach((obj, index) => {
+                                if (!Array.isArray(obj.editHistory)) obj.editHistory = [];
+                                const receivers = Array.isArray(obj.receivers) ? obj.receivers : [];
                                 let costDetailsHtml = '';
                                 if (obj.isExpense) {
                                     const writeOffPerWorker = parseFloat(obj.cost) / obj.workers.length;
-                                    const accrualPerReceiver = obj.receivers.length > 0 ? Math.abs(parseFloat(obj.cost)) / obj.receivers.length : 0;
+                                    const accrualPerReceiver = receivers.length > 0 ? Math.abs(parseFloat(obj.cost)) / receivers.length : 0;
 
                                     const writeOffDetails = obj.workers.map(worker => {
                                         const workerName = typeof worker === 'string' ? worker : worker.name;
                                         return `<span class="worker-item">${getWorkerIcon(workerName)}${workerName}: ${writeOffPerWorker.toFixed(2)} ₽</span>`;
                                     }).join('');
 
-                                    const accrualDetails = obj.receivers.length > 0
-                                    ? obj.receivers.map(receiver => {
+                                    const accrualDetails = receivers.length > 0
+                                    ? receivers.map(receiver => {
                                         return `<span class="worker-item">${getWorkerIcon(receiver)}${receiver}: ${accrualPerReceiver.toFixed(2)} ₽</span>`;
                                     }).join('')
                                     : '';
@@ -2510,8 +2760,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 let imageUrl = null;
                                 if (obj.isExpense) {
                                     if (obj.name.toLowerCase() === 'бензин') {
-                                        if (obj.receivers.length === 1 && obj.receivers.includes('Коля')) imageUrl = calcUrl('img/nexia.png');
-                                        else if (obj.receivers.length === 1 && obj.receivers.includes('Артём')) imageUrl = calcUrl('img/ford.png');
+                                        if (receivers.length === 1 && receivers.includes('Коля')) imageUrl = calcUrl('img/nexia.png');
+                                        else if (receivers.length === 1 && receivers.includes('Артём')) imageUrl = calcUrl('img/ford.png');
                                         else imageUrl = calcUrl('img/fuel.png');
                                     } else if (obj.name.toLowerCase() === 'съёмная квартира') {
                                         imageUrl = calcUrl('img/house.png');
@@ -2543,7 +2793,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 console.log(`Object: ${obj.name}, Service: ${obj.service}, imageUrl: ${imageUrl}`);
 
                                 let costFormula = `${obj.cost} ₽`;
-                                if (obj.isExpense && obj.name.toLowerCase() === 'бензин' && obj.receivers.length > 0) {
+                                if (obj.isExpense && obj.name.toLowerCase() === 'бензин' && receivers.length > 0) {
                                     const fuelConsumption = 6.7;
                                     const fuelPrice = 61;
                                     if (obj.distance && !obj.startMileage) {
@@ -2621,8 +2871,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                             </div>
                                         </div>`;
                                     }).join('') + '</div>'}
-                                    ${obj.receivers && obj.receivers.length > 0 ? '<div class="productFeatures" style="margin-top: 16px;"><h3 style="grid-column: 1/-1; color: #30cfd0; font-size: 14px; margin-bottom: 8px;">НАЧИСЛЕНИЕ</h3>' + obj.receivers.map(receiver => {
-                                        const accrualPerReceiver = Math.abs(parseFloat(obj.cost)) / obj.receivers.length;
+                                    ${receivers.length > 0 ? '<div class="productFeatures" style="margin-top: 16px;"><h3 style="grid-column: 1/-1; color: #30cfd0; font-size: 14px; margin-bottom: 8px;">НАЧИСЛЕНИЕ</h3>' + receivers.map(receiver => {
+                                        const accrualPerReceiver = Math.abs(parseFloat(obj.cost)) / receivers.length;
                                         return `<div class="feature">
                                             <div class="featureIcon">${getWorkerIcon(receiver)}</div>
                                             <div class="featureText">
@@ -5170,7 +5420,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     return;
                                 }
 
-                                const encryptedPayload = await encryptBackupData(window.objects, password);
+                                const encryptedPayload = await encryptBackupData({
+                                    objects: window.objects,
+                                    workers
+                                }, password);
                                 const json = JSON.stringify(encryptedPayload, null, 2);
                                 const blob = new Blob([json], { type: 'application/json' });
                                 const url = URL.createObjectURL(blob);
@@ -5262,7 +5515,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                         const { objects: restoredObjects, workers: restoredWorkers } = normalizeBackup(normalizedSource);
                                         if (confirm('Восстановить данные из JSON? Текущие данные будут перезаписаны.')) {
                                             window.objects = Array.isArray(restoredObjects) ? restoredObjects : [];
-                                            workers = Array.isArray(restoredWorkers) ? restoredWorkers : (workers || []);
+                                            workers = (Array.isArray(restoredWorkers) ? restoredWorkers : (workers || []))
+                                                .map((w) => normalizeWorkerRecord(typeof w === 'object' ? w : { name: w, role: 'worker' }));
                                             saveData();
                                             populateWorkers();
                                             renderObjects();

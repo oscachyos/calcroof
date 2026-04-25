@@ -1499,6 +1499,19 @@ input[type="checkbox"]:disabled:checked {
     }
 }
 
+.results-layout {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	width: 100%;
+}
+
+.worker-stats-section-title {
+	font-size: 1.25rem;
+	margin: 1.25rem 0 0.75rem;
+	color: var(--text-primary);
+}
+
 .results {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -4526,6 +4539,76 @@ body select option {
 /* On small screens allow natural flow */
 @media (max-width: 1024px) {
 	.charts-container > .chart-box { grid-column: auto !important; }
+}
+
+/* Вкладка «Настройки» — работники */
+#calc-settings .settings-hint {
+	color: var(--text-secondary);
+	font-size: 0.95rem;
+	margin-bottom: 1rem;
+	max-width: 56rem;
+	line-height: 1.5;
+}
+#calc-settings .settings-hint code {
+	font-size: 0.9em;
+	padding: 0.1em 0.35em;
+	border-radius: 4px;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+}
+.settings-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 1rem 0 1.25rem;
+	align-items: center;
+}
+.workers-settings-table-wrap {
+	overflow-x: auto;
+	border-radius: var(--border-radius);
+	border: 1px solid var(--border-color);
+	background: var(--bg-card);
+}
+.workers-settings-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+.workers-settings-table th,
+.workers-settings-table td {
+	border-bottom: 1px solid var(--border-color);
+	padding: 0.6rem 0.75rem;
+	text-align: left;
+	vertical-align: middle;
+}
+.workers-settings-table th {
+	color: var(--text-secondary);
+	font-weight: 600;
+	white-space: nowrap;
+}
+.workers-settings-table tbody tr:last-child td {
+	border-bottom: none;
+}
+.workers-settings-table tbody tr:hover td {
+	background: rgba(255, 255, 255, 0.03);
+}
+.workers-settings-table input[type="text"],
+.workers-settings-table input[type="number"],
+.workers-settings-table select {
+	width: 100%;
+	max-width: 14rem;
+	padding: 0.35rem 0.5rem;
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+}
+.workers-settings-table .ws-pays-label {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	min-height: 2rem;
 }
 
 /* Prevent white background in PWA/APK */

@@ -1,12 +1,16 @@
-const CACHE_NAME = 'technonicol-calc-v2';
+const SCOPE = new URL('./', self.location);
+const cacheUrl = (rel) => new URL(rel, SCOPE).href;
+
+const CACHE_NAME = 'technonicol-calc-v3';
 const urlsToCache = [
-  '/calc/',
-  '/calc/index.html',
-  '/calc/styles.css',
-  '/calc/script.js',
-  '/calc/logo.png',
-  '/calc/json/workers.json',
-  '/calc/json/manifest.json'
+  SCOPE.href,
+  cacheUrl('index.html'),
+  cacheUrl('styles.css'),
+  cacheUrl('script.js'),
+  cacheUrl('settings.js'),
+  cacheUrl('logo.png'),
+  cacheUrl('json/workers.json'),
+  cacheUrl('json/manifest.json')
 ];
 
 // Установка service worker
@@ -68,8 +72,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // Если оффлайн и нет в кэше, можно вернуть fallback страницу
-        return caches.match('/calc/index.html');
+        return caches.match(cacheUrl('index.html'));
       })
   );
 });
-

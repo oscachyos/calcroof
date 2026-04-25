@@ -1,9 +1,25 @@
 // calc/script.js
 document.addEventListener('DOMContentLoaded', () => {
-    
+    // База приложения: папка, где лежит script.js (работает и на GitHub Pages в подпапке, и локально)
+    const scriptEl = document.querySelector('script[src*="script.js"]');
+    const calcBaseUrl = (scriptEl && scriptEl.src)
+        ? new URL('./', scriptEl.src)
+        : new URL('./', window.location.href);
+
+    function calcUrl(relativePath) {
+        return new URL(relativePath, calcBaseUrl).href;
+    }
+    function resolveStaticUrl(maybe) {
+        if (!maybe) return maybe;
+        if (maybe.startsWith('http://') || maybe.startsWith('https://') || maybe.startsWith('data:')) return maybe;
+        if (maybe.startsWith('/calc/')) return new URL(maybe.replace(/^\/calc\//, ''), calcBaseUrl).href;
+        if (maybe.startsWith('/')) return new URL(maybe, window.location.origin).href;
+        return calcUrl(maybe);
+    }
+
     // === PWA SERVICE WORKER ===
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/calc/sw.js')
+        navigator.serviceWorker.register(calcUrl('sw.js'), { scope: calcBaseUrl.href })
             .then((registration) => {
                 console.log('Service Worker зарегистрирован:', registration);
             })
@@ -1429,12 +1445,12 @@ document.addEventListener('DOMContentLoaded', () => {
             async function loadAllData() {
                 try {
                     const [encryptedObjectsData, fallbackObjectsData, workersData, pricesData, customServicesData, expenseTypesData] = await Promise.all([
-                        fetchWithRetry('/upload/save.enc.json'),
-                        fetchWithRetry('/upload/save.json'),
-                        fetchWithRetry('/calc/json/workers.json'),
-                        fetchWithRetry('/calc/json/prices.json'),
-                        fetchWithRetry('/calc/json/custom-services.json'),
-                        fetchWithRetry('/calc/json/expense-types.json')
+                        fetchWithRetry(calcUrl('../upload/save.enc.json')),
+                        fetchWithRetry(calcUrl('../upload/save.json')),
+                        fetchWithRetry(calcUrl('json/workers.json')),
+                        fetchWithRetry(calcUrl('json/prices.json')),
+                        fetchWithRetry(calcUrl('json/custom-services.json')),
+                        fetchWithRetry(calcUrl('json/expense-types.json'))
                     ]);
 
                     let objectsData = null;
@@ -1442,18 +1458,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? encryptedObjectsData
                         : ((fallbackObjectsData && fallbackObjectsData.__encryptedBackup) ? fallbackObjectsData : null);
                     if (encryptedSource) {
-                        const password = prompt('Найден зашифрованный /upload/save.enc.json. Введите пароль для загрузки данных:');
+                        const password = prompt('Найден зашифрованный файл в папке upload (save.enc.json). Введите пароль для загрузки данных:');
                         if (password) {
                             try {
                                 objectsData = await decryptBackupData(encryptedSource, password);
                             } catch (decryptError) {
                                 if (decryptError && decryptError.message === 'WEB_CRYPTO_UNAVAILABLE') {
                                     alert(
-                                        'Шифрованный /upload/save.enc.json найден, но шифрование недоступно в текущем окружении.\n' +
+                                        'Шифрованный save.enc.json найден, но шифрование недоступно в текущем окружении.\n' +
                                         'Откройте сайт через https или localhost/127.0.0.1.'
                                     );
                                 } else {
-                                    alert('Не удалось расшифровать /upload/save.enc.json. Проверьте пароль.');
+                                    alert('Не удалось расшифровать save.enc.json. Проверьте пароль.');
                                 }
                             }
                         } else {
@@ -1467,7 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Проверяем успешность загрузки каждого файла
                     if (!objectsData) {
-                        console.error('Не удалось загрузить /upload/save.enc.json или /upload/save.json');
+                        console.error('Не удалось загрузить upload/save.enc.json или upload/save.json');
                         window.objects = [];
                     } else {
                         window.objects = objectsData;
@@ -2494,26 +2510,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                 let imageUrl = null;
                                 if (obj.isExpense) {
                                     if (obj.name.toLowerCase() === 'бензин') {
-                                        if (obj.receivers.length === 1 && obj.receivers.includes('Коля')) imageUrl = '/calc/img/nexia.png';
-                                        else if (obj.receivers.length === 1 && obj.receivers.includes('Артём')) imageUrl = '/calc/img/ford.png';
-                                        else imageUrl = '/calc/img/fuel.png';
+                                        if (obj.receivers.length === 1 && obj.receivers.includes('Коля')) imageUrl = calcUrl('img/nexia.png');
+                                        else if (obj.receivers.length === 1 && obj.receivers.includes('Артём')) imageUrl = calcUrl('img/ford.png');
+                                        else imageUrl = calcUrl('img/fuel.png');
                                     } else if (obj.name.toLowerCase() === 'съёмная квартира') {
-                                        imageUrl = '/calc/img/house.png';
+                                        imageUrl = calcUrl('img/house.png');
                                     } else if (obj.name.toLowerCase() === 'еда') {
-                                        imageUrl = '/calc/img/eat.png';
+                                        imageUrl = calcUrl('img/eat.png');
                                     } else if (obj.name.toLowerCase() === 'займ') {
-                                        imageUrl = '/calc/img/money.png';
+                                        imageUrl = calcUrl('img/money.png');
                                     }
                                 } else if (obj.isCustomService) {
                                     switch (obj.service) {
                                         case 'Электросварка перил и лестниц на кровле':
-                                            imageUrl = '/calc/img/lestnica.png';
+                                            imageUrl = calcUrl('img/lestnica.png');
                                             break;
                                         case 'Погрузо-разгрузочные работы':
-                                            imageUrl = '/calc/img/pogruzka.png';
+                                            imageUrl = calcUrl('img/pogruzka.png');
                                             break;
                                         case 'Уборка территории':
-                                            imageUrl = '/calc/img/cleaning.png';
+                                            imageUrl = calcUrl('img/cleaning.png');
                                             break;
                                     }
                                 } else {
@@ -2522,6 +2538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         imageUrl = priceEntry.image;
                                     }
                                 }
+                                if (imageUrl) imageUrl = resolveStaticUrl(imageUrl);
 
                                 console.log(`Object: ${obj.name}, Service: ${obj.service}, imageUrl: ${imageUrl}`);
 

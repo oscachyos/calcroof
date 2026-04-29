@@ -105,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return {
             __encryptedBackup: true,
             version: 1,
+            savedAt: new Date().toISOString(),
             kdf: 'PBKDF2',
             iterations: 250000,
             hash: 'SHA-256',
@@ -1009,6 +1010,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Переменные состояния
     window.objects = []; // Глобальная переменная
     let workers = [];
+    window.workers = workers;
     let editMode = false;
     
     // Вспомогательные функции для работы с workers
@@ -1266,6 +1268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             workers = next;
+            window.workers = workers;
             saveData();
             populateWorkers();
             renderWorkersSettingsTab();
@@ -1763,8 +1766,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (workersFromSave) {
                         workers = workersFromSave.map(normalizeWorkerRecord);
+                        window.workers = workers;
                     } else {
                         workers = workersPayload;
+                        window.workers = workers;
                     }
                     if (!workers.length) {
                         console.warn('Список работников пуст после загрузки — подставлен запасной список');
@@ -1774,6 +1779,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             { name: 'Слава', role: 'worker' },
                             { name: 'Женя', role: 'worker' }
                         ].map(normalizeWorkerRecord);
+                        window.workers = workers;
                     }
 
                     if (!pricesData) {

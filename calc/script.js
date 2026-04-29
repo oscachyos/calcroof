@@ -1657,6 +1657,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxRetries = 3;
             const retryDelay = 1000; // 1 секунда
 
+            let remoteBackupResolver = null;
+            window.__calcroofRemoteBackupLoaded = function(payloadText, source) {
+                if (typeof remoteBackupResolver === 'function') {
+                    remoteBackupResolver({
+                        payloadText: payloadText || '',
+                        source: source || 'none'
+                    });
+                    remoteBackupResolver = null;
+                }
+            };
+
+            async function fetchBestRemoteEncryptedBackupFromAndroid(timeoutMs = 5000) {
+                if (typeof Android === 'undefined' || typeof Android.fetchBestRemoteEncryptedBackup !== 'function') {
+                    return null;
+                }
+                return new Promise((resolve) => {
+                    let settled = false;
+                    const timer = setTimeout(() => {
+                        if (settled) return;
+                        settled = true;
+                        remoteBackupResolver = null;
+                        resolve(null);
+                    }, timeoutMs);
+                    remoteBackupResolver = (result) => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timer);
+                        resolve(result && result.payloadText ? result : null);
+                    };
+                    try {
+                        Android.fetchBestRemoteEncryptedBackup();
+                    } catch (_) {
+                        clearTimeout(timer);
+                        remoteBackupResolver = null;
+                        resolve(null);
+                    }
+                });
+            }
+
             async function fetchWithRetry(url, retryCount = 0) {
                 try {
                     const response = await fetch(url, fetchOptions);
@@ -1679,13 +1718,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             async function loadAllData() {
                 try {
-                    const [encryptedObjectsData, templateWorkersJson, pricesData, customServicesData, expenseTypesData] = await Promise.all([
+                    const remoteEncrypted = await fetchBestRemoteEncryptedBackupFromAndroid(6000);
+                    const [encryptedObjectsDataFromFetch, templateWorkersJson, pricesData, customServicesData, expenseTypesData] = await Promise.all([
                         fetchWithRetry(calcUrl('../upload/save.enc.json')),
                         fetchWithRetry(calcUrl('json/workers.json')),
                         fetchWithRetry(calcUrl('json/prices.json')),
                         fetchWithRetry(calcUrl('json/custom-services.json')),
                         fetchWithRetry(calcUrl('json/expense-types.json'))
                     ]);
+                    let encryptedObjectsData = encryptedObjectsDataFromFetch;
+                    if (remoteEncrypted && remoteEncrypted.payloadText) {
+                        try {
+                            const parsedRemote = JSON.parse(remoteEncrypted.payloadText);
+                            if (parsedRemote && parsedRemote.__encryptedBackup) {
+                                encryptedObjectsData = parsedRemote;
+                                console.log(`Используется remote backup из ${remoteEncrypted.source || 'remote'}`);
+                            }
+                        } catch (e) {
+                            console.error('Ошибка парсинга remote backup:', e);
+                        }
+                    }
 
                     let objectsData = null;
                     const encryptedSource = (encryptedObjectsData && encryptedObjectsData.__encryptedBackup)

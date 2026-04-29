@@ -1634,9 +1634,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             async function loadAllData() {
                 try {
-                    const [encryptedObjectsData, fallbackObjectsData, templateWorkersJson, pricesData, customServicesData, expenseTypesData] = await Promise.all([
+                    const [encryptedObjectsData, templateWorkersJson, pricesData, customServicesData, expenseTypesData] = await Promise.all([
                         fetchWithRetry(calcUrl('../upload/save.enc.json')),
-                        fetchWithRetry(calcUrl('../upload/save.json')),
                         fetchWithRetry(calcUrl('json/workers.json')),
                         fetchWithRetry(calcUrl('json/prices.json')),
                         fetchWithRetry(calcUrl('json/custom-services.json')),
@@ -1646,7 +1645,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let objectsData = null;
                     const encryptedSource = (encryptedObjectsData && encryptedObjectsData.__encryptedBackup)
                         ? encryptedObjectsData
-                        : ((fallbackObjectsData && fallbackObjectsData.__encryptedBackup) ? fallbackObjectsData : null);
+                        : null;
                     if (encryptedSource) {
                         const password = prompt('Найден зашифрованный файл в папке upload (save.enc.json). Введите пароль для загрузки данных:');
                         if (password) {
@@ -1663,17 +1662,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                             }
                         } else {
-                            alert('Пароль не введен. Будет использован обычный save.json (если он есть).');
+                            alert('Пароль не введен. Будет использован пустой список объектов.');
                         }
-                    }
-
-                    if (!objectsData) {
-                        objectsData = fallbackObjectsData;
                     }
 
                     // Объекты из save: массив ИЛИ { objects, workers? }
                     if (!objectsData) {
-                        console.error('Не удалось загрузить upload/save.enc.json или upload/save.json');
+                        console.error('Не удалось загрузить upload/save.enc.json');
                         window.objects = [];
                     } else if (Array.isArray(objectsData)) {
                         window.objects = objectsData;
@@ -1769,14 +1764,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     saveData();
 
-                    // Обновляем UI (ошибка статистики не должна ломать загрузку workers)
+                    // Обновляем UI
                     renderObjects();
+                    renderWorkerStats();
                     populateWorkers();
-                    try {
-                        renderWorkerStats();
-                    } catch (statsErr) {
-                        console.error('Ошибка renderWorkerStats (пропущено):', statsErr);
-                    }
                     populateServiceSelect(prices, selectDisplay, selectedValue, optionsList);
                     populateManualServiceSelect(prices, manualSelectDisplay, manualSelectedValue, manualOptionsList, manualPriceLabel);
                     populateCustomServiceSelect(customServices);
@@ -2726,7 +2717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (renderableObjects.length === 0) {
                             resultsDiv.innerHTML = filteredObjects.length === 0
                                 ? '<p>Объектов по этому фильтру не найдено.</p>'
-                                : '<p>Записи есть, но у них нет списка участников (workers) — проверьте <code>upload/save.json</code> или восстановите из резервной копии.</p>';
+                                : '<p>Записи есть, но у них нет списка участников (workers) — проверьте <code>upload/save.enc.json</code> или восстановите из резервной копии.</p>';
                         } else {
                             renderableObjects.forEach((obj, index) => {
                                 if (!Array.isArray(obj.editHistory)) obj.editHistory = [];

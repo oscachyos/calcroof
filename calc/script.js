@@ -1190,6 +1190,9 @@ document.addEventListener('DOMContentLoaded', () => {
         rows.forEach((row) => {
             const name = row.querySelector('.ws-name')?.value?.trim() || '';
             if (!name) return;
+            const rowIndex = Number.parseInt(row.dataset.index || '', 10);
+            const oldWorker = Number.isFinite(rowIndex) ? workers[rowIndex] : null;
+            const oldName = oldWorker ? getWorkerName(oldWorker) : '';
             const role = row.querySelector('.ws-role')?.value === 'foreman' ? 'foreman' : 'worker';
             const pays = row.querySelector('.ws-pays')?.checked;
             const fpct = parseFloat(row.querySelector('.ws-fpct')?.value);
@@ -1197,13 +1200,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const percentage = prev && typeof prev === 'object' && typeof prev.percentage === 'number' && Number.isFinite(prev.percentage)
                 ? prev.percentage
                 : 0;
-            list.push(normalizeWorkerRecord({
+            const normalized = normalizeWorkerRecord({
                 name,
                 role,
                 paysForemanPercent: role === 'foreman' ? false : !!pays,
                 foremanPercent: role === 'foreman' ? 0 : (Number.isFinite(fpct) ? fpct : 15),
                 percentage
-            }));
+            });
+            normalized.__oldName = oldName || normalized.name;
+            list.push(normalized);
         });
         const names = list.map(x => x.name);
         const dup = names.find((n, i) => names.indexOf(n) !== i);
@@ -1225,9 +1230,46 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-workers-apply')?.addEventListener('click', () => {
             const next = collectWorkersFromSettingsTable();
             if (!next) return;
+            const renameMap = {};
+            next.forEach((w) => {
+                const oldName = (w.__oldName || '').trim();
+                const newName = (w.name || '').trim();
+                if (oldName && newName && oldName !== newName) {
+                    renameMap[oldName] = newName;
+                }
+                delete w.__oldName;
+            });
+            const hasRenames = Object.keys(renameMap).length > 0;
+            if (hasRenames) {
+                window.objects = (window.objects || []).map((obj) => {
+                    if (!obj || typeof obj !== 'object') return obj;
+                    if (Array.isArray(obj.workers)) {
+                        obj.workers = obj.workers.map((w) => {
+                            if (typeof w === 'string') return renameMap[w] || w;
+                            if (w && typeof w === 'object') {
+                                const current = getWorkerName(w);
+                                if (renameMap[current]) return { ...w, name: renameMap[current] };
+                            }
+                            return w;
+                        });
+                    }
+                    if (Array.isArray(obj.receivers)) {
+                        obj.receivers = obj.receivers.map((name) => renameMap[name] || name);
+                    }
+                    if (Array.isArray(obj.issuedMoney)) {
+                        obj.issuedMoney = obj.issuedMoney.map((im) => {
+                            if (!im || typeof im !== 'object') return im;
+                            return renameMap[im.name] ? { ...im, name: renameMap[im.name] } : im;
+                        });
+                    }
+                    return obj;
+                });
+            }
             workers = next;
             saveData();
             populateWorkers();
+            renderWorkersSettingsTab();
+            renderObjects();
             if (typeof window.renderWorkerStats === 'function') window.renderWorkerStats();
         });
         document.getElementById('btn-workers-reload')?.addEventListener('click', () => {
